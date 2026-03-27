@@ -31,6 +31,7 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
                 [
                     { "text": "➕ اضافة الى قناة ➕", "url": `https://t.me/${botUsername}?startchannel=true` },
                     { "text": "➕ اضافة الى مجموعة ➕", "url": `https://t.me/${botUsername}?startgroup=true` },
+
                 ],
                 [
                     { "text": "قناتي الرسمية ", "url": "https://t.me/DFD318" },
