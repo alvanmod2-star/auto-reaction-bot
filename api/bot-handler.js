@@ -7,10 +7,10 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
     const content = data.message || data.channel_post;
     const chatId = content.chat.id;
     const message_id = content.message_id;
-    const text = content.text;
+    const text = content.text ? content.text.trim() : ""; // تنظيف الفراغات
     const userId = content.from ? content.from.id : null;
 
-    // 1️⃣ --- كود الاشتراك الإجباري (للحسابات الخاصة) ---
+    // 1️⃣ --- الاشتراك الإجباري ---
     if (content.chat && content.chat.type === "private") {
         const channelUsername = "@DFD318"; 
         const botToken = "6379676688:AAFohKBLhQSYN9jdbZHKsZTkUEJvnxbbOnI";
@@ -27,13 +27,40 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
         } catch (e) { console.log("Sub Error"); }
     }
 
-    // 2️⃣ --- أوامر البوت (الردود النصية مع الأزرار) ---
-    if (text === '/start' || text === '/start@' + botUsername) {
+    // 2️⃣ --- فحص الأوامر (استخدمنا startsWith حتى نضمن الشغل) ---
+    if (text.startsWith('/start')) {
         const keyboard = {
             inline_keyboard: [
                 [{ "text": "➕ اضافة الى قناة", "url": `https://t.me/${botUsername}?startchannel=true` },
                  { "text": "➕ اضافة الى مجموعة", "url": `https://t.me/${botUsername}?startgroup=true` }],
                 [{ "text": "📢 قناتي الرسمية", "url": "https://t.me/DFD318" }],
+                [{ "text": "⭐ حسابي الشخصي", "url": "https://t.me/mu_312" }]
+            ]
+        };
+        await botApi.sendMessage(chatId, startMessage.replace('UserName', content.from.first_name || 'بطل'), { reply_markup: keyboard });
+    } 
+    else if (text.startsWith('/id')) {
+        const msg = `👤 **بياناتك يا بطل:**\n\n• الاسم: ${content.from.first_name}\n• الايدي: \`${userId}\`\n• يوزرك: @${content.from.username || 'لا يوجد'}\n\n📢 @DFD318`;
+        await botApi.sendMessage(chatId, msg, { parse_mode: "Markdown" });
+    }
+    else if (text === 'هلو') {
+        await botApi.sendMessage(chatId, "هلوات عيوني، مقتدى يسلم عليك 🌹");
+    }
+    else if (text.startsWith('/status') && userId === 5794792675) {
+        await botApi.sendMessage(chatId, "✅ البوت شغال ومية مية يا ابن الناصرية!");
+    }
+    
+    // 3️⃣ --- نظام التفاعل (يشتغل فقط إذا لم يكن الكلام "أمر") ---
+    else if (text !== "") {
+        let threshold = 1 - (RandomLevel / 10);
+        if (!RestrictedChats.includes(chatId)) {
+            if (Math.random() <= threshold) {
+                await botApi.setMessageReaction(chatId, message_id, getRandomPositiveReaction(Reactions));
+            }
+        }
+    }
+}
+
                 [{ "text": "⭐ حسابي الشخصي", "url": "https://t.me/mu_312" }]
             ]
         };
