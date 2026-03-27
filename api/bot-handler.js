@@ -34,6 +34,49 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
             } catch (e) { console.log("Error in Force Sub"); }
         }
 
+        // 2️⃣ --- أوامر البوت النصية (الردود) ---
+        if (data.message && (text === '/start' || text === '/start@' + botUsername)) {
+            const keyboard = [
+                [{ "text": "➕ اضافة الى قناة", "url": `https://t.me/${botUsername}?startchannel=true` },
+                 { "text": "➕ اضافة الى مجموعة", "url": `https://t.me/${botUsername}?startgroup=true` }],
+                [{ "text": "📢 قناتي الرسمية", "url": "https://t.me/DFD318" }],
+                [{ "text": "⭐ حسابي الشخصي", "url": "https://t.me/mu_312" }]
+            ];
+            await botApi.sendMessage(chatId, startMessage.replace('UserName', content.from.first_name || 'حياتي'), keyboard);
+        } 
+        else if (data.message && text === '/id') {
+            const msg = `👤 **بياناتك يا بطل:**\n\n• الاسم: ${content.from.first_name}\n• الايدي: \`${content.from.id}\`\n• يوزرك: @${content.from.username || 'لا يوجد'}\n\n📢 @DFD318`;
+            await botApi.sendMessage(chatId, msg);
+        }
+        else if (data.message && text === '/status' && content.from.id === 5794792675) {
+            const date = new Date().toLocaleString('ar-IQ', { timeZone: 'Asia/Baghdad' });
+            await botApi.sendMessage(chatId, `✅ البوت متصل وشغال!\n⏰ الوقت: ${date}\n📍 الموقع: الناصرية`);
+        }
+        else if (data.message && text === 'هلو') {
+            await botApi.sendMessage(chatId, "هلوات عيوني، مقتدى يسلم عليك 🌹");
+        }
+        else if (data.message && text === '/reactions') {
+            const reactions = Reactions.join(", ");
+            await botApi.sendMessage(chatId, "✅ التفاعلات المفعلة: \n\n" + reactions);
+        } 
+        // 3️⃣ --- نظام التفاعل التلقائي (يشتغل إذا لم يكن هناك أمر) ---
+        else {
+            let threshold = 1 - (RandomLevel / 10);
+            if (!RestrictedChats.includes(chatId)) {
+                if (["group", "supergroup"].includes(content.chat.type)) {
+                    if (Math.random() <= threshold) {
+                        await botApi.setMessageReaction(chatId, message_id, getRandomPositiveReaction(Reactions));
+                    }
+                } else {
+                    await botApi.setMessageReaction(chatId, message_id, getRandomPositiveReaction(Reactions));
+                }
+            }
+        }
+    } else if (data.pre_checkout_query) {
+        await botApi.answerPreCheckoutQuery(data.pre_checkout_query.id, true);
+        await botApi.sendMessage(data.pre_checkout_query.from.id, "شكرا لاستخدامك البوت ! 💝");
+    }
+}
         // 2️⃣ --- أوامر البوت النصية ---
         if (data.message && (text === '/start' || text === '/start@' + botUsername)) {
             const keyboard = [
