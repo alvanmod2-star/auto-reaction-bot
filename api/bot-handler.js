@@ -1,9 +1,3 @@
-/*!
- * © [2026] Malith-Rukshan. All rights reserved.
- * Repository: https://github.com/Malith-Rukshan/Auto-Reaction-Bot
- * Modified for: Muqtada (Nasiriyah)
- */
-
 import { startMessage } from './constants.js';
 import { getRandomPositiveReaction } from './helper.js';
 
@@ -59,14 +53,17 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
             const reactions = Reactions.join(", ");
             await botApi.sendMessage(chatId, "✅ التفاعلات المفعلة: \n\n" + reactions);
         } 
-        // 3️⃣ --- نظام التفاعل التلقائي (الأساسي) ---
+        // 3️⃣ --- نظام التفاعل التلقائي ---
         else {
             let threshold = 1 - (RandomLevel / 10);
             if (!RestrictedChats.includes(chatId)) {
-                if (["group", "supergroup"].includes(content.chat.type)) {
-                    if (Math.random() <= threshold) {
-                        await botApi.setMessageReaction(chatId, message_id, getRandomPositiveReaction(Reactions));
-                    }
+                await botApi.setMessageReaction(chatId, message_id, getRandomPositiveReaction(Reactions));
+            }
+        }
+    } else if (data.pre_checkout_query) {
+        await botApi.answerPreCheckoutQuery(data.pre_checkout_query.id, true);
+    }
+}
                 } else {
                     await botApi.setMessageReaction(chatId, message_id, getRandomPositiveReaction(Reactions));
                 }
