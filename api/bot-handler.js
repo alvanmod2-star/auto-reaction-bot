@@ -29,8 +29,11 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
         if (data.message && (text === '/start' || text === '/start@' + botUsername)) {
             await botApi.sendMessage(chatId, startMessage.replace('UserName', content.chat.type === "private" ? content.from.first_name : content.chat.title), [
                 [
-                    { "text": "➕ اضافة الى قناة ➕", "url": `https://t.me/${botUsername}?startchannel=true` },
-                    { "text": "➕ اضافة الى مجموعة ➕", "url": `https://t.me/${botUsername}?startgroup=true` },
+                    [
+  { "text": "➕ اضافة الى قناة ➕", "url": "https://t.me/Baugauhabot?startchannel=true" },
+  { "text": "➕ اضافة الى مجموعة ➕", "url": "https://t.me/Baugauhabot?startgroup=true" }
+],
+
 
                 ],
                 [
