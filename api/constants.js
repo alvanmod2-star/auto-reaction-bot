@@ -4,9 +4,9 @@ export const startMessage = `👋  اهلا حياتي , UserName !
 
 💁‍♂️ إليك كيف أُضفي لمسة مميزة على محادثاتك:
 
-*✨ سحر الرسائل الخاصة*: راسلني واحصل على مفاجأة: /donate`
+*✨ لدفع 15 نجمة للحصول على المزيد من التفاعلات حسب اختيارك: /donate`
 
-export const donateMessage = ` تم التفعيل اخي! 🌟🚀`
+export const donateMessage = `  قم بمراسلتي هناا @mu_312   ! 🌟🚀`
 
 export const htmlContent = `
 <!DOCTYPE html>
