@@ -6,17 +6,6 @@
 import { startMessage, donateMessage } from './constants.js';
 import { getRandomPositiveReaction } from './helper.js';
 
-/**
- * Handle incoming Telegram Update
- * https://core.telegram.org/bots/api#update
- *
- * @param {Object} data - Telegram update object
- * @param {Object} botApi - TelegramBotAPI instance
- * @param {Array} Reactions - Array of emoji reactions
- * @param {Array} RestrictedChats - Array of restricted chat IDs
- * @param {string} botUsername - Bot username
- * @param {number} RandomLevel - Random level for group reactions (0-10)
- */
 export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUsername, RandomLevel) {
     let chatId, message_id, text;
 
@@ -27,37 +16,33 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
         text = content.text;
 
         if (data.message && (text === '/start' || text === '/start@' + botUsername)) {
-            await botApi.sendMessage(chatId, startMessage.replace('UserName', content.chat.type === "private" ? content.from.first_name : content.chat.title), [
+            // تصحيح الأقواس هنا لتكون مصفوفة أزرار صحيحة
+            const keyboard = [
                 [
-                    [
-  { "text": "➕ اضافة الى قناة ➕", "url": "https://t.me/Baugauhabot?startchannel=true" },
-  { "text": "➕ اضافة الى مجموعة ➕", "url": "https://t.me/Baugauhabot?startgroup=true" }
-],
-
-
+                    { "text": "➕ اضافة الى قناة ➕", "url": "https://t.me/Baugauhabot?startchannel=true" },
+                    { "text": "➕ اضافة الى مجموعة ➕", "url": "https://t.me/Baugauhabot?startgroup=true" }
                 ],
                 [
-                    { "text": "قناتي الرسمية ", "url": "https://t.me/DFD318" },
+                    { "text": "📢 قناتي الرسمية", "url": "https://t.me/DFD318" }
                 ],
                 [
-                    { "text": "⭐حسابي الشخصي", "url": "https://t.me/mu_312" }
+                    { "text": "⭐ حسابي الشخصي", "url": "https://t.me/mu_312" }
                 ]
-            ]);
+            ];
+
+            await botApi.sendMessage(chatId, startMessage.replace('UserName', content.from.first_name || 'حياتي'), keyboard);
+            
         } else if (data.message && text === '/reactions') {
             const reactions = Reactions.join(", ");
             await botApi.sendMessage(chatId, "✅ تم تفعيل التفاعلات : \n\n" + reactions);
-        }  else {
-            // Calculate the threshold: higher RandomLevel, lower threshold
+        } else {
             let threshold = 1 - (RandomLevel / 10);
             if (!RestrictedChats.includes(chatId)) {
-                // Check if chat is a group or supergroup to determine if reactions should be random
                 if (["group", "supergroup"].includes(content.chat.type)) {
-                    // Run Function Randomly - According to the RANDOM_LEVEL
                     if (Math.random() <= threshold) {
                         await botApi.setMessageReaction(chatId, message_id, getRandomPositiveReaction(Reactions));
                     }
                 } else {
-                    // For non-group chats, set the reaction directly
                     await botApi.setMessageReaction(chatId, message_id, getRandomPositiveReaction(Reactions));
                 }
             }
