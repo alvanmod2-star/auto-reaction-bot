@@ -7,10 +7,10 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
     const content = data.message || data.channel_post;
     const chatId = content.chat.id;
     const message_id = content.message_id;
-    const text = content.text ? content.text.trim() : ""; // تنظيف الفراغات
+    const text = content.text ? content.text.trim() : "";
     const userId = content.from ? content.from.id : null;
 
-    // 1️⃣ --- الاشتراك الإجباري ---
+    // 1️⃣ الاشتراك الإجباري
     if (content.chat && content.chat.type === "private") {
         const channelUsername = "@DFD318"; 
         const botToken = "6379676688:AAFohKBLhQSYN9jdbZHKsZTkUEJvnxbbOnI";
@@ -21,19 +21,40 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
                 const forceSubKeyboard = {
                     inline_keyboard: [[{ "text": "📢 اشترك بالقناة لتفعيل البوت", "url": "https://t.me/DFD318" }]]
                 };
-                await botApi.sendMessage(chatId, "⚠️ | عذراً عزيزي، يجب عليك الاشتراك في القناة الرسمية أولاً.\n\n👇 اشترك ثم ارسل /start", { reply_markup: forceSubKeyboard });
+                await botApi.sendMessage(chatId, "⚠️ | عذراً، يجب عليك الاشتراك أولاً.\n\n👇 اشترك ثم ارسل /start", { reply_markup: forceSubKeyboard });
                 return;
             }
         } catch (e) { console.log("Sub Error"); }
     }
 
-    // 2️⃣ --- فحص الأوامر (استخدمنا startsWith حتى نضمن الشغل) ---
+    // 2️⃣ الأوامر والردود
     if (text.startsWith('/start')) {
         const keyboard = {
             inline_keyboard: [
                 [{ "text": "➕ اضافة الى قناة", "url": `https://t.me/${botUsername}?startchannel=true` },
                  { "text": "➕ اضافة الى مجموعة", "url": `https://t.me/${botUsername}?startgroup=true` }],
                 [{ "text": "📢 قناتي الرسمية", "url": "https://t.me/DFD318" }],
+                [{ "text": "⭐ حسابي الشخصي", "url": "https://t.me/mu_312" }]
+            ]
+        };
+        await botApi.sendMessage(chatId, startMessage.replace('UserName', content.from.first_name || 'بطل'), { reply_markup: keyboard });
+    } 
+    else if (text.startsWith('/id')) {
+        await botApi.sendMessage(chatId, `👤 اسمك: ${content.from.first_name}\n🆔 ايديك: \`${userId}\``, { parse_mode: "Markdown" });
+    }
+    else if (text === 'هلو') {
+        await botApi.sendMessage(chatId, "هلوات عيوني، مقتدى يسلم عليك 🌹");
+    }
+    // 3️⃣ نظام التفاعل (إذا لم يكن هناك أمر)
+    else {
+        let threshold = 1 - (RandomLevel / 10);
+        if (!RestrictedChats.includes(chatId)) {
+            if (Math.random() <= threshold) {
+                await botApi.setMessageReaction(chatId, message_id, getRandomPositiveReaction(Reactions));
+            }
+        }
+    }
+}
                 [{ "text": "⭐ حسابي الشخصي", "url": "https://t.me/mu_312" }]
             ]
         };
