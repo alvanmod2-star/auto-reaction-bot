@@ -27,27 +27,4 @@ export const htmlContent = `
   }
   .title { margin-bottom: 20px; font-size: 34px; font-weight: bold; color: #333; text-align: center; }
   .button {
-    padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; text-align: center; color: #fff; border: none; border-radius: 15px;
-    transition: background-color 0.3s ease; display: inline-block; outline: none;
-  }
-  .githubBtn { background-color: #0881FD; }
-  .githubBtn:hover { background-color: #0672E0; }
-</style>
-</head>
-<body>
-
-<div class="title">Telegram Auto Reaction Bot 🎉</div>
-<img class="logo" src="https://telegra.ph/file/cb59967120c6bda64580b.jpg">
-
-<button class="button githubBtn" onclick="window.location='https://github.com/Malith-Rukshan/Auto-Reaction-Bot'">Open Source 🌱</button>
-
-<div style="margin: 5px;">
-  <a class="github-button" href="https://github.com/Malith-Rukshan/Auto-Reaction-Bot" data-size="large" data-show-count="true">Star</a>
-  <a class="github-button" href="https://github.com/Malith-Rukshan/Auto-Reaction-Bot/fork" data-size="large" data-show-count="true">Fork</a>
-</div>
-<div>
-  <a class="github-button" href="https://github.com/Malith-Rukshan" data-size="large">Follow @Malith-Rukshan</a>
-</div>
-</body>
-</html>
-`;
+    padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; text-align: center; color: #fff; border: none; border-radius: 15px
