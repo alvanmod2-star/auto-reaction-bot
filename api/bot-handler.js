@@ -10,6 +10,7 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
     const text = content.text;
     const userId = content.from ? content.from.id : null;
 
+    // 1. نظام الاشتراك الإجباري
     if (content.chat && content.chat.type === "private") {
         const channelUsername = "@DFD318"; 
         const botToken = "6379676688:AAFohKBLhQSYN9jdbZHKsZTkUEJvnxbbOnI";
@@ -23,6 +24,7 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
         } catch (e) { console.log("Sub Error"); }
     }
 
+    // 2. أوامر الردود النصية
     if (text === '/start' || text === '/start@' + botUsername) {
         const keyboard = [[{ "text": "➕ اضافة", "url": `https://t.me/${botUsername}?startgroup=true` }]];
         await botApi.sendMessage(chatId, startMessage.replace('UserName', content.from.first_name || 'بطل'), keyboard);
@@ -36,6 +38,7 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
     else if (text === '/status' && userId === 5794792675) {
         await botApi.sendMessage(chatId, "✅ البوت شغال ومية مية بالناصرية!");
     }
+    // 3. نظام التفاعلات التلقائي
     else {
         let threshold = 1 - (RandomLevel / 10);
         if (!RestrictedChats.includes(chatId)) {
