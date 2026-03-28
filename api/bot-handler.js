@@ -6,14 +6,12 @@ export async function onUpdate(data, botApi, env) {
         const chatId = message.chat.id;
         const message_id = message.message_id;
         const text = message.text.trim();
-        const userName = message.from ? message.from.first_name : "الغالي";
+        const userName = message.from ? message.from.first_name : "بعد روحي";
 
-        // 1. تفاعل إيموجي حتى يحس المستخدم إن البوت شغال
-        await botApi.setMessageReaction(chatId, message_id, "🤝").catch(() => {});
+        // 1. تفاعل إيموجي يضحك
+        await botApi.setMessageReaction(chatId, message_id, "😂").catch(() => {});
 
-        if (text.startsWith('/')) return;
-
-        // 2. استخدام Groq للرد الذكي والتفاعلي
+        // 2. استخدام مفتاح Groq القوي
         const GROQ_KEY = "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";
         
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -27,11 +25,11 @@ export async function onUpdate(data, botApi, env) {
                 messages: [
                     { 
                         role: "system", 
-                        content: `أنت 'بوت مقتدى'. مهمتك الرد على المستخدمين بذكاء وأدب وبلهجة أهل الناصرية.
-                        - اسم المستخدم اللي جاي تراسله هو: ${userName}.
-                        - إذا سلم، رد عليه بأجمل سلام ناصري.
-                        - إذا سأل عن كود أو رابط، جيبه له فوراً.
-                        - خلك حار ومرحب (مثلاً: هلا بيك ${userName} يبعد حيّي، نورتنا).` 
+                        content: `أنت 'بوت مقتدى'. شخصيتك: ابن ناصرية، لسانك حلو، شقاوجي وظريف جداً.
+                        - لازم ترد بلهجة الناصرية القح (مثلاً: يبعد طوايفي، شبيك عيني، هاك استلم).
+                        - إذا أحد سألك عن كود، اكتبه إله بس اتمضحك وياه شوية.
+                        - إذا أحد طلب رابط، جيب الرابط وگله 'هذا الرابط يبعد حيّي لا تدوخ'.
+                        - لا تختصر الردود بشكل يضوج، خل سوالفك تونس ${userName}.` 
                     },
                     { role: "user", content: text }
                 ]
@@ -43,11 +41,11 @@ export async function onUpdate(data, botApi, env) {
         if (resData.choices && resData.choices[0].message) {
             const aiReply = resData.choices[0].message.content;
             
-            // إرسال الرد المباشر للمستخدم
+            // إرسال الرد الظريف
             await botApi.sendMessage(chatId, aiReply, "Markdown", message_id);
         }
 
     } catch (e) {
-        console.log("Error handling user message");
+        // إذا صار خطأ ما يوكف البوت
     }
 }
