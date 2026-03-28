@@ -10,7 +10,7 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
         message_id = content.message_id;
         text = content.text;
 
-        // --- كود الاشتراك الإجباري ---
+        // --- 1. كود الاشتراك الإجباري ---
         if (content.chat && content.chat.type === "private") {
             const channelUsername = "@DFD318";
             const botToken = "6939721323:AAG9eDCNgz3Kct9APMRfrZUCDDSJfKbu8tc";
@@ -23,17 +23,17 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
                     await botApi.sendMessage(chatId, "⚠️ | عذراً مقتدى، اشترك بالقناة أولاً ثم ارسل /start", keyboard);
                     return;
                 }
-            } catch (e) { console.log("Error in Force Sub"); }
+            } catch (e) { console.log("Error Force Sub"); }
         }
 
-        // --- الأوامر ---
+        // --- 2. الأوامر الأساسية ---
         if (data.message && (text === '/start' || text === '/start@' + botUsername)) {
             const keyboard = [[{ "text": "📢 قناتي الرسمية", "url": "https://t.me/DFD318" }]];
             await botApi.sendMessage(chatId, startMessage.replace('UserName', content.from.first_name || 'حياتي'), keyboard);
         } else if (data.message && text === '/reactions') {
             await botApi.sendMessage(chatId, "✅ تم تفعيل وضع الرشق (20 تفاعل) للقنوات!");
         } else {
-            // --- كود الرشق (هنا التصليح) ---
+            // --- 3. كود رشق التفاعلات (20 تفاعل) ---
             if (!RestrictedChats.includes(chatId)) {
                 if (data.channel_post) {
                     // رشق 20 تفاعل للمنشورات الجديدة بالقناة
@@ -41,11 +41,12 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
                     for (const emoji of rashqList) {
                         try {
                             await botApi.setMessageReaction(chatId, message_id, emoji);
+                            // تأخير بسيط جداً لضمان وصول الرشق
                             await new Promise(r => setTimeout(r, 150));
                         } catch (e) { continue; }
                     }
                 } else if (data.message) {
-                    // تفاعل واحد عشوائي للمجموعات
+                    // تفاعل واحد عشوائي للمجموعات العادية
                     await botApi.setMessageReaction(chatId, message_id, getRandomPositiveReaction(Reactions));
                 }
             }
