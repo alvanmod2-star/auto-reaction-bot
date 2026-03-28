@@ -8,10 +8,12 @@ export async function onUpdate(data, botApi, env) {
         const text = message.text.trim();
         const userName = message.from ? message.from.first_name : "يبعد حيّي";
 
-        // 1. تفاعل سريع (إيموجي يضحك لأن البوت ضريف)
+        // 1. تفاعل إيموجي ضريف
         await botApi.setMessageReaction(chatId, message_id, "🤣").catch(() => {});
 
-        // 2. مفتاح Groq (تأكد إنه مو مسرب أو محذوف)
+        if (text.startsWith('/')) return;
+
+        // 2. استخدام مفتاح Groq
         const GROQ_KEY = "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";
         
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -25,7 +27,25 @@ export async function onUpdate(data, botApi, env) {
                 messages: [
                     { 
                         role: "system", 
-                        content: `أنت 'بوت مقتدى'. شخصيتك: ابن نصرية، لسانك ينقط عسل وشقاوة.
-                        - رد بلهجة أهل الناصرية القوية (مثلاً: هااا شني، يبعد طوايفي، دهاك استلم).
+                        content: `أنت 'بوت مقتدى'. مبرمج خبير وموسوعة روابط، وبنفس الوقت ابن ناصرية ضريف وشقاوجي.
+                        - رد بلهجة أهل الناصرية (مثلاً: هاا شني، يبعد طوايفي، دهاك استلم).
                         - إذا طلبوا كود أو روابط، انطيهمياها بذكاء بس اتمضحك وياهم.
-                        
+                        - لا تصير رسمي، خلك فكاهي وسوالفك تونس ${userName}.` 
+                    },
+                    { role: "user", content: text }
+                ]
+            })
+        });
+
+        const resData = await response.json();
+
+        if (resData.choices && resData.choices[0].message) {
+            const aiReply = resData.choices[0].message.content;
+            await botApi.sendMessage(chatId, aiReply, "Markdown", message_id);
+        }
+
+    } catch (e) {
+        // في حال حدوث خطأ
+        console.log("Error logic");
+    }
+}
