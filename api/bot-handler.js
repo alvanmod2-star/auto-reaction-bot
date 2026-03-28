@@ -9,7 +9,16 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
     const message_id = content.message_id;
     const text = content.text || "";
 
-    // --- 1. الرد الذكي (بالمجموعات والخاص فقط) ---
+    // 1. أمر الاستارت (شغال بالخاص والمجموعات)
+    if (data.message && (text === '/start' || text.startsWith('/start'))) {
+        const keyboard = [[{ "text": "📢 قناتي الرسمية", "url": "https://t.me/DFD318" }]];
+        await botApi.sendMessage(chatId, startMessage.replace('UserName', content.from?.first_name || 'حياتي'), keyboard);
+        // التفاعل بعد الاستارت
+        await botApi.setMessageReaction(chatId, message_id, getRandomPositiveReaction(Reactions));
+        return;
+    }
+
+    // 2. الرد الذكي (فقط بالخاص والمجموعات)
     if (data.message && text && !text.startsWith('/')) {
         const GEMINI_API_KEY = "AIzaSyDiTD-uOIX69bewR59dBRo-MTw_mugQ3SM"; 
         
@@ -27,22 +36,15 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
                 const replyText = aiData.candidates[0].content.parts[0].text;
                 await botApi.sendMessage(chatId, replyText, null, message_id);
             }
-        } catch (e) {
-            console.log("AI Error");
-        }
+        } catch (e) { console.log("AI Error"); }
     }
 
-    // --- 2. الأوامر الأساسية ---
-    if (data.message && (text === '/start' || text === '/start@' + botUsername)) {
-        const keyboard = [[{ "text": "📢 قناتي الرسمية", "url": "https://t.me/DFD318" }]];
-        await botApi.sendMessage(chatId, startMessage.replace('UserName', content.from?.first_name || 'حياتي'), keyboard);
-        return;
-    }
-
-    // --- 3. التفاعل التلقائي (يبقى شغال بالقنوات والكل) ---
+    // 3. التفاعل التلقائي (شغال بكل مكان: قنوات، مجموعات، خاص)
     if (!RestrictedChats.includes(chatId)) {
         try {
             await botApi.setMessageReaction(chatId, message_id, getRandomPositiveReaction(Reactions));
-        } catch (e) { }
+        } catch (e) { 
+            console.log("Reaction Error"); 
+        }
     }
 }
