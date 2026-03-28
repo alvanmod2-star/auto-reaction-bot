@@ -4,42 +4,34 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
 
     const chatId = content.chat.id;
     const message_id = content.message_id;
-    const text = content.text || "";
+    const text = (content.text || "").trim();
 
-    // 1. التفاعل الفوري (شغال عندك 100%)
+    // 1. التفاعل (شغال ومضبوط)
     const fastReactions = ["👍", "❤️", "🔥", "🥰", "👏"];
-    const randomEmoji = fastReactions[Math.floor(Math.random() * fastReactions.length)];
     try {
-        await botApi.setMessageReaction(chatId, message_id, randomEmoji);
+        await botApi.setMessageReaction(chatId, message_id, fastReactions[Math.floor(Math.random() * fastReactions.length)]);
     } catch (e) {}
 
-    // 2. إذا الرسالة مو أمر (يعني كلام عادي)، يروح للذكاء الاصطناعي فوراً
-    if (data.message && text && !text.startsWith('/')) {
-        const apiKey = "AIzaSyBmDxL3cI9mQhkHPApRTQnSnsGz4j6neDU"; 
-        
-        try {
-            const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: `أنت بوت مقتدى، رد بلهجة أهل الناصرية وبكلمات قصيرة جداً ومرحة. رد على: ${text}` }] }]
-                })
-            });
-
-            const aiData = await aiResponse.json();
-            
-            if (aiData.candidates && aiData.candidates[0].content) {
-                const reply = aiData.candidates[0].content.parts[0].text;
-                await botApi.sendMessage(chatId, reply, null, message_id);
-                return; // أهم خطوة حتى ما يروح ينفذ كود الاستارت
-            }
-        } catch (e) {
-            console.log("AI Error");
-        }
+    // 2. أمر الاستارت
+    if (text === '/start') {
+        await botApi.sendMessage(chatId, "هلا مقتدى! البوت هسة راح يرد غصب عنه 🚀");
+        return;
     }
 
-    // 3. أمر الاستارت (يشتغل فقط إذا كتبت /start حصراً)
-    if (text === '/start') {
-        await botApi.sendMessage(chatId, "هلا مقتدى! البوت هسة جاهز للرد الذكي والناصرية 🚀");
+    // 3. الرد بذكاء اصطناعي مجاني (بدون مفتاح API)
+    if (data.message && text && !text.startsWith('/')) {
+        try {
+            // استدعاء محرك بحث وذكاء مجاني سريع
+            const response = await fetch(`https://api.simsimi.vn/v2/?text=${encodeURIComponent(text)}&lc=ar`);
+            const resData = await response.json();
+            
+            if (resData.result) {
+                let reply = resData.result;
+                // إضافة لمسة ناصرية بسيطة للرد
+                await botApi.sendMessage(chatId, `${reply} .. وعلي صايرة هوسة!`, null, message_id);
+            }
+        } catch (e) {
+            await botApi.sendMessage(chatId, "يا مقتدى حتى السيرفر تعب من عدنا! 🌚", null, message_id);
+        }
     }
 }
