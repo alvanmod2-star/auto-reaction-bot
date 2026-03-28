@@ -7,26 +7,25 @@ export async function onUpdate(data, botApi) {
         const message_id = content.message_id;
         const text = content.text.trim();
 
-        // 1. التفاعل التلقائي (إيموجي)
-        const emojis = ["👍", "❤️", "🔥", "🥰", "👏"];
-        await botApi.setMessageReaction(chatId, message_id, emojis[Math.floor(Math.random() * emojis.length)]).catch(() => {});
+        // 1. التفاعل (شغال عندك)
+        await botApi.setMessageReaction(chatId, message_id, "👍").catch(() => {});
 
-        // 2. أمر الاستارت
         if (text === '/start') {
             await botApi.sendMessage(chatId, "هلا مقتدى! البوت هسة نطق بالمفتاح الجديد 🚀");
             return;
         }
 
-        // 3. الرد بالذكاء (Gemini)
+        // 2. الرد الذكي (استخدام الموديل العام لتجنب خطأ Not Found)
         if (!text.startsWith('/')) {
-            const apiKey = "AIzaSyB2VrseqlXOGA7cCiD_QGj2LUU5YaYsfBs"; 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const apiKey = "AIzaSyB2VrseqlXOGA7cCiD_QGj2LUU5YaYsfBs"; // مفتاحك الشغال
+            // استخدمنا أضمن رابط بالعالم هسة
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
 
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: `أنت بوت ذكي، رد بلهجة أهل الناصرية وبكلمات قصيرة جداً. رد على: ${text}` }] }]
+                    contents: [{ parts: [{ text: `رد بلهجة أهل الناصرية وبكلمة وحدة مضحكة على: ${text}` }] }]
                 })
             });
 
@@ -36,12 +35,10 @@ export async function onUpdate(data, botApi) {
                 const reply = aiData.candidates[0].content.parts[0].text;
                 await botApi.sendMessage(chatId, reply, null, message_id);
             } else {
-                // إذا أكو مشكلة بالمفتاح، راح يگولك فوراً
-                const msg = aiData.error ? aiData.error.message : "عطل فني بجوجل";
-                await botApi.sendMessage(chatId, "مقتدى، جوجل تگول: " + msg);
+                // إذا عاندت، يطبع لك الخطأ حتى نعرف شنسوي
+                const msg = aiData.error ? aiData.error.message : "عطل فني";
+                await botApi.sendMessage(chatId, "جوجل تگول: " + msg);
             }
         }
-    } catch (e) {
-        console.log("Global Error");
-    }
+    } catch (e) {}
 }
