@@ -7,35 +7,40 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
         const message_id = message.message_id;
         const text = message.text.trim();
 
-        // 1. التفاعل التلقائي (شغال عندك تمام)
-        await botApi.setMessageReaction(chatId, message_id, "👍").catch(() => {});
+        // 1. تفاعل حتى نعرف البوت عايش
+        await botApi.setMessageReaction(chatId, message_id, "⚡").catch(() => {});
 
         if (text.startsWith('/')) return;
 
-        // 2. طلب الذكاء الاصطناعي برابط "مضمون"
-        const apiKey = "AIzaSyB2VrseqlXOGA7cCiD_QGj2LUU5YaYsfBs"; // مفتاحك الجديد
+        // 2. استخدام ذكاء اصطناعي بديل (بدون Gemini)
+        // هذا رابط مباشر لموديل Mistral - سريع ومجاني للطلبات البسيطة
+        const url = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2";
         
-        // غيرنا الرابط إلى gemini-1.5-flash-latest (الأكثر استقراراً هسة)
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
-
         const response = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                // إذا عندك حساب Hugging Face حط توكن هنا، إذا ما عندك جرب بدونه (يشتغل لعدد محدد)
+                'Authorization': 'Bearer hf_vSLLpXmXvJqWpWpWpWpWpWpWpW' 
+            },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: `رد بكلمة وحدة بلهجة أهل الناصرية مضحكة على: ${text}` }] }]
+                inputs: `رد بكلمة وحدة بلهجة ناصرية مضحكة جداً على: ${text}`,
+                parameters: { max_new_tokens: 10 }
             })
         });
 
         const resData = await response.json();
 
-        // 3. معالجة الرد أو إظهار الخطأ الحقيقي
-        if (resData.candidates && resData.candidates[0].content) {
-            const reply = resData.candidates[0].content.parts[0].text;
-            await botApi.sendMessage(chatId, reply, null, message_id);
-        } else if (resData.error) {
-            // إذا جوجل رفضت، راح تگول لنا السبب بوضوح
-            await botApi.sendMessage(chatId, "جوجل تگول: " + resData.error.message);
+        // 3. الرد على المستخدم
+        if (resData && resData[0] && resData[0].generated_text) {
+            let aiReply = resData[0].generated_text.split(':').pop().trim();
+            await botApi.sendMessage(chatId, aiReply, null, message_id);
+        } else {
+            // إذا فشل البديل، نرجع نعاتب حظنا بكلمة ناصرية ثابتة
+            await botApi.sendMessage(chatId, "أني اعتذر مقتدى، السيرفرات اليوم عطلانة"، null, message_id);
         }
 
-    } catch (e) {}
+    } catch (e) {
+        console.log("Error in alternative AI");
+    }
 }
