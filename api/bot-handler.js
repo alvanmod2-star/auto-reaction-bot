@@ -6,19 +6,19 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
     const message_id = content.message_id;
     const text = (content.text || "").trim();
 
-    // 1. التفاعل التلقائي (شغال 100%)
+    // 1. التفاعل التلقائي (شغال عندك)
     const fastReactions = ["👍", "❤️", "🔥", "🥰", "👏"];
     try {
         await botApi.setMessageReaction(chatId, message_id, fastReactions[Math.floor(Math.random() * fastReactions.length)]);
     } catch (e) {}
 
-    // 2. إذا كانت الرسالة أمر استارت
+    // 2. أمر الاستارت
     if (text === '/start') {
-        await botApi.sendMessage(chatId, "هلا مقتدى! هسة البوت راح يرد عليك ناصري أصلي 🚀");
+        await botApi.sendMessage(chatId, "هلا مقتدى! البوت هسة انطلق بالذكاء الناصري 🚀");
         return;
     }
 
-    // 3. الرد بذكاء اصطناعي (Gemini) - النسخة المضمونة
+    // 3. الرد بـ Gemini (بعد التفعيل)
     if (data.message && text && !text.startsWith('/')) {
         const apiKey = "AIzaSyBmDxL3cI9mQhkHPApRTQnSnsGz4j6neDU"; 
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
@@ -28,7 +28,7 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: `أنت مساعد ذكي ملقب بـ "بوت مقتدى"، رد بلهجة أهل الناصرية وبكلمات قصيرة جداً ومرحة. الرد على: ${text}` }] }]
+                    contents: [{ parts: [{ text: `أنت بوت مقتدى، رد بلهجة أهل الناصرية وبكلمات قصيرة جداً ومرحة. رد على: ${text}` }] }]
                 })
             });
 
@@ -38,11 +38,12 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
                 const reply = aiData.candidates[0].content.parts[0].text;
                 await botApi.sendMessage(chatId, reply, null, message_id);
             } else {
-                // لو الـ API بيه مشكلة فعلية راح يگولك
-                await botApi.sendMessage(chatId, "مقتدى، المفتاح مالي يحتاج تفعيل من جوجل! ⚠️", null, message_id);
+                // إذا طلع خطأ، راح يدزه الك بالضبط حتى نعرف العلة
+                const errorMsg = aiData.error ? aiData.error.message : "خطأ غير معروف";
+                await botApi.sendMessage(chatId, `جوجل تگول: ${errorMsg}`, null, message_id);
             }
         } catch (e) {
-            console.log("Gemini Error");
+            console.log("Error");
         }
     }
-                    }
+}
