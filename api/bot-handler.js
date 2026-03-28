@@ -7,38 +7,49 @@ export async function onUpdate(data, botApi) {
         const message_id = content.message_id;
         const text = content.text.trim();
 
-        // 1. التفاعل (شغال عندك)
-        await botApi.setMessageReaction(chatId, message_id, "👍").catch(() => {});
+        // 1. التفاعل السريع (حتى تعرف البوت استلم)
+        await botApi.setMessageReaction(chatId, message_id, "🔥").catch(() => {});
 
-        if (text === '/start') {
-            await botApi.sendMessage(chatId, "هلا مقتدى! البوت هسة نطق بالمفتاح الجديد 🚀");
-            return;
+        if (text.startsWith('/')) return;
+
+        const apiKey = "AIzaSyB2VrseqlXOGA7cCiD_QGj2LUU5YaYsfBs"; // مفتاحك الشغال
+        
+        // مصفوفة موديلات - إذا فشل واحد يجرب الثاني
+        const models = [
+            "gemini-1.5-flash",
+            "gemini-1.5-pro",
+            "gemini-pro"
+        ];
+
+        let success = false;
+
+        for (const model of models) {
+            if (success) break;
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `رد بكلمة ناصرية وحدة بس على: ${text}` }] }]
+                    })
+                });
+
+                const aiData = await response.json();
+
+                if (aiData.candidates && aiData.candidates[0].content) {
+                    const reply = aiData.candidates[0].content.parts[0].text;
+                    await botApi.sendMessage(chatId, reply, null, message_id);
+                    success = true;
+                }
+            } catch (e) {}
         }
 
-        // 2. الرد الذكي (استخدام الموديل العام لتجنب خطأ Not Found)
-        if (!text.startsWith('/')) {
-            const apiKey = "AIzaSyB2VrseqlXOGA7cCiD_QGj2LUU5YaYsfBs"; // مفتاحك الشغال
-            // استخدمنا أضمن رابط بالعالم هسة
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: `رد بلهجة أهل الناصرية وبكلمة وحدة مضحكة على: ${text}` }] }]
-                })
-            });
-
-            const aiData = await response.json();
-
-            if (aiData.candidates && aiData.candidates[0].content) {
-                const reply = aiData.candidates[0].content.parts[0].text;
-                await botApi.sendMessage(chatId, reply, null, message_id);
-            } else {
-                // إذا عاندت، يطبع لك الخطأ حتى نعرف شنسوي
-                const msg = aiData.error ? aiData.error.message : "عطل فني";
-                await botApi.sendMessage(chatId, "جوجل تگول: " + msg);
-            }
+        if (!success) {
+            await botApi.sendMessage(chatId, "مقتدى، ولا موديل رهم! الرابط جاي يتغير، صبرك عليّ.");
         }
+
     } catch (e) {}
 }
