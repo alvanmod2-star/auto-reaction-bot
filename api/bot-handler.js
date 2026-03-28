@@ -7,12 +7,14 @@ export async function onUpdate(data, botApi) {
         const message_id = message.message_id;
         const text = message.text.trim();
 
-        // 1. تفاعل إيموجي يضحك
-        await botApi.setMessageReaction(chatId, message_id, "🤣").catch(() => {});
+        // 1. التفاعلات الحنونة والضريفة اللي ردتها
+        const myReactions = ["💘", "🌚", "💋", "💗"];
+        const randomReaction = myReactions[Math.floor(Math.random() * myReactions.length)];
+        await botApi.setMessageReaction(chatId, message_id, randomReaction).catch(() => {});
 
         if (text.startsWith('/')) return;
 
-        // 2. استخدام Groq للردود فقط
+        // 2. استخدام Groq للردود الحنونة
         const GROQ_KEY = "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";
         
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -26,7 +28,7 @@ export async function onUpdate(data, botApi) {
                 messages: [
                     { 
                         role: "system", 
-                        content: "أنت 'بوت مقتدى'. ابن ناصرية ضريف جداً وشقاوجي. رد بلهجة أهل الناصرية حصراً وبكلمات قصيرة ومضحكة. لا تكتب أكواد ولا روابط، بس سولف وتشاقى." 
+                        content: "أنت 'بوت مقتدى'. ابن نصرية ضريف جداً، لسانك حلو، وحنون بشكل مو طبيعي. رد بلهجة أهل الناصرية وبكلمات دافئة ومضحكة (مثلاً: يبعد حيّي، يا بعد جبدي، فدوة لهل طول). خلك رومانسي وضريف وابتعد عن الرسميات والأكواد." 
                     },
                     { role: "user", content: text }
                 ]
@@ -41,6 +43,6 @@ export async function onUpdate(data, botApi) {
         }
 
     } catch (e) {
-        // إذا صار عطل بسيط
+        // حماية البوت من التوقف
     }
 }
