@@ -1,9 +1,9 @@
 /*!
  * © [2026] Malith-Rukshan. All rights reserved.
- * Repository: https://github.com/Malith-Rukshan/Auto-Reaction-Bot
+ * Edited for Muqtada - 20 Reactions Mode
  */
 
-import { startMessage, donateMessage } from './constants.js';
+import { startMessage } from './constants.js';
 import { getRandomPositiveReaction } from './helper.js';
 
 export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUsername, RandomLevel) {
@@ -15,71 +15,59 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
         message_id = content.message_id;
         text = content.text;
 
-        // ==========================================
-        // --- بداية كود الاشتراك الإجباري ---
-        // ==========================================
+        // --- كود الاشتراك الإجباري ---
         if (content.chat && content.chat.type === "private") {
-            const channelUsername = "@DFD318"; // يوزر قناتك
-            const botToken = "ضع_توكن_البوت_هنا"; // 🔴 امسح هذي الكلمة وحط توكن بوتك مكانها
+            const channelUsername = "@DFD318"; 
+            const botToken = "6939721323:AAG9eDCNgz3Kct9APMRfrZUCDDSJfKbu8tc"; 
 
             try {
                 const userId = content.from.id;
-                // فحص اشتراك المستخدم في القناة
                 const response = await fetch(`https://api.telegram.org/bot${botToken}/getChatMember?chat_id=${channelUsername}&user_id=${userId}`);
                 const checkData = await response.json();
 
-                // إذا كان المستخدم غير مشترك، أو غادر القناة، أو مطرود
                 if (checkData.ok && (checkData.result.status === "left" || checkData.result.status === "kicked")) {
-                    const forceSubKeyboard = [
-                        [
-                            { "text": "📢 اضغط هنا للاشتراك بالقناة", "url": "https://t.me/DFD318" }
-                        ]
-                    ];
-                    
-                    await botApi.sendMessage(chatId, "⚠️ | عذراً عزيزي، يجب عليك الاشتراك في القناة الرسمية أولاً لتتمكن من استخدام البوت.\n\n👇 اشترك الآن ثم ارسل /start", forceSubKeyboard);
-                    return; // إيقاف البوت هنا وعدم إرسال أي رسالة أخرى حتى يشترك
+                    const forceSubKeyboard = [[{ "text": "📢 اضغط هنا للاشتراك بالقناة", "url": "https://t.me/DFD318" }]];
+                    await botApi.sendMessage(chatId, "⚠️ | عذراً مقتدى، يجب الاشتراك بالقناة أولاً.\n\n👇 اشترك ثم ارسل /start", forceSubKeyboard);
+                    return;
                 }
-            } catch (error) {
-                console.log("خطأ في التحقق من الاشتراك");
-            }
+            } catch (error) { console.log("خطأ اشتراك"); }
         }
-        // ==========================================
-        // --- نهاية كود الاشتراك الإجباري ---
-        // ==========================================
 
+        // --- الأوامر /start و /reactions ---
         if (data.message && (text === '/start' || text === '/start@' + botUsername)) {
             const keyboard = [
-                [
-                    { "text": "➕ اضافة الى قناة ➕", "url": "https://t.me/Baugauhabot?startchannel=true" },
-                    { "text": "➕ اضافة الى مجموعة ➕", "url": "https://t.me/Baugauhabot?startgroup=true" }
-                ],
-                [
-                    { "text": "📢 قناتي الرسمية", "url": "https://t.me/DFD318" }
-                ],
-                [
-                    { "text": "⭐ حسابي الشخصي", "url": "https://t.me/mu_312" }
-                ]
+                [{ "text": "➕ اضافة الى قناة ➕", "url": "https://t.me/Baugauhabot?startchannel=true" }],
+                [{ "text": "📢 قناتي الرسمية", "url": "https://t.me/DFD318" }],
+                [{ "text": "⭐ حسابي الشخصي", "url": "https://t.me/mu_312" }]
             ];
-
             await botApi.sendMessage(chatId, startMessage.replace('UserName', content.from.first_name || 'حياتي'), keyboard);
             
         } else if (data.message && text === '/reactions') {
-            const reactions = Reactions.join(", ");
-            await botApi.sendMessage(chatId, "✅ تم تفعيل التفاعلات : \n\n" + reactions);
+            await botApi.sendMessage(chatId, "✅ تم تفعيل وضع الـ 20 تفاعل المتفجر!");
         } else {
-            let threshold = 1 - (RandomLevel / 10);
+            // ==========================================
+            // --- كود تفجير الـ 20 تفاعل الجديد ---
+            // ==========================================
             if (!RestrictedChats.includes(chatId)) {
-                if (["group", "supergroup"].includes(content.chat.type)) {
-                    if (Math.random() <= threshold) {
-                        await botApi.setMessageReaction(chatId, message_id, getRandomPositiveReaction(Reactions));
+                // قائمة الـ 20 تفاعل اللي طلبتهن يا مقتدى
+                const fireReactions = [
+                    '👍', '❤️', '🔥', '🥰', '👏', '🤩', '🤔', '🤯', 
+                    '😱', '⚡️', '🍓', '🎉', '😎', '😍', '🕊', '🤡', 
+                    '💯', '🤣', '🌚', '❤️‍🔥'
+                ];
+
+                // تنفيذ التفاعلات واحد ورا الثاني
+                for (const emoji of fireReactions) {
+                    try {
+                        await botApi.setMessageReaction(chatId, message_id, emoji);
+                        // تأخير بسيط جداً (200 ملي ثانية) لحماية الحساب من الحظر
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    } catch (e) {
+                        console.log("توقف التفاعل أو القناة لا تدعم هذا الإيموجي");
                     }
-                } else {
-                    await botApi.setMessageReaction(chatId, message_id, getRandomPositiveReaction(Reactions));
                 }
             }
+            // ==========================================
         }
-    } else if (data.pre_checkout_query) {
-        await botApi.answerPreCheckoutQuery(data.pre_checkout_query.id, true);
-        await botApi.sendMessage(data.pre_checkout_query.from.id, "شكرا لاستخدامك البوت ! 💝");
     }
 }
