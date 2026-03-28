@@ -1,55 +1,40 @@
-export async function onUpdate(data, botApi) {
+export async function onUpdate(data, botApi, env) {
     try {
-        const content = data.message || data.channel_post;
-        if (!content || !content.text) return;
+        const message = data.message || data.channel_post;
+        if (!message || !message.text) return;
 
-        const chatId = content.chat.id;
-        const message_id = content.message_id;
-        const text = content.text.trim();
+        const chatId = message.chat.id;
+        const text = message.text.trim();
 
-        // 1. التفاعل السريع (حتى تعرف البوت استلم)
-        await botApi.setMessageReaction(chatId, message_id, "🔥").catch(() => {});
+        // 1. تفاعل سريع (إيموجي) حتى نعرفه استلم
+        await botApi.setMessageReaction(chatId, message.message_id, "🔥").catch(() => {});
 
-        if (text.startsWith('/')) return;
+        // 2. إذا مو أمر، جاوبه بالذكاء الاصطناعي
+        if (!text.startsWith('/')) {
+            // هسة راح ياخذ المفتاح من المتغيرات اللي ضفناها بالـ Cloudflare
+            const apiKey = env.GEMINI_API_KEY || "AIzaSyB2VrseqlXOGA7cCiD_QGj2LUU5YaYsfBs";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
-        const apiKey = "AIzaSyB2VrseqlXOGA7cCiD_QGj2LUU5YaYsfBs"; // مفتاحك الشغال
-        
-        // مصفوفة موديلات - إذا فشل واحد يجرب الثاني
-        const models = [
-            "gemini-1.5-flash",
-            "gemini-1.5-pro",
-            "gemini-pro"
-        ];
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: `رد بلهجة أهل الناصرية وبكلمة وحدة بس على: ${text}` }] }]
+                })
+            });
 
-        let success = false;
+            const result = await response.json();
 
-        for (const model of models) {
-            if (success) break;
-
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: `رد بكلمة ناصرية وحدة بس على: ${text}` }] }]
-                    })
-                });
-
-                const aiData = await response.json();
-
-                if (aiData.candidates && aiData.candidates[0].content) {
-                    const reply = aiData.candidates[0].content.parts[0].text;
-                    await botApi.sendMessage(chatId, reply, null, message_id);
-                    success = true;
-                }
-            } catch (e) {}
+            if (result.candidates && result.candidates[0].content) {
+                const aiReply = result.candidates[0].content.parts[0].text;
+                await botApi.sendMessage(chatId, aiReply, null, message.message_id);
+            } else {
+                // إذا أكو خطأ من جوجل، يطبع لنا شنو المشكلة
+                const errorMsg = result.error ? result.error.message : "جوجل بعدها صافنة";
+                await botApi.sendMessage(chatId, `يا مقتدى جوجل تگول: ${errorMsg}`);
+            }
         }
-
-        if (!success) {
-            await botApi.sendMessage(chatId, "مقتدى، ولا موديل رهم! الرابط جاي يتغير، صبرك عليّ.");
-        }
-
-    } catch (e) {}
+    } catch (e) {
+        console.log("Global Worker Error");
+    }
 }
