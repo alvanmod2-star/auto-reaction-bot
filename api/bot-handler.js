@@ -6,14 +6,14 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
     const message_id = content.message_id;
     const text = content.text || "";
 
-    // 1. التفاعل الفوري (هذا شغال عندك ومضبوط)
-    const fastReactions = ["👍", "❤️", "🔥", "🥰", "👏", "⚡️"];
+    // 1. التفاعل الفوري (شغال عندك 100%)
+    const fastReactions = ["👍", "❤️", "🔥", "🥰", "👏"];
     const randomEmoji = fastReactions[Math.floor(Math.random() * fastReactions.length)];
     try {
         await botApi.setMessageReaction(chatId, message_id, randomEmoji);
     } catch (e) {}
 
-    // 2. الرد بالذكاء الاصطناعي (لكل الرسائل العادية)
+    // 2. إذا الرسالة مو أمر (يعني كلام عادي)، يروح للذكاء الاصطناعي فوراً
     if (data.message && text && !text.startsWith('/')) {
         const apiKey = "AIzaSyBmDxL3cI9mQhkHPApRTQnSnsGz4j6neDU"; 
         
@@ -22,7 +22,7 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: `أنت بوت مقتدى، رد بلهجة أهل الناصرية وبكلمات قصيرة جداً ومرحة وفكاهية على: ${text}` }] }]
+                    contents: [{ parts: [{ text: `أنت بوت مقتدى، رد بلهجة أهل الناصرية وبكلمات قصيرة جداً ومرحة. رد على: ${text}` }] }]
                 })
             });
 
@@ -31,14 +31,14 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
             if (aiData.candidates && aiData.candidates[0].content) {
                 const reply = aiData.candidates[0].content.parts[0].text;
                 await botApi.sendMessage(chatId, reply, null, message_id);
-                return; // حتى ما يروح للاستارت إذا الكلمة تشبهه
+                return; // أهم خطوة حتى ما يروح ينفذ كود الاستارت
             }
         } catch (e) {
             console.log("AI Error");
         }
     }
 
-    // 3. أمر الاستارت (فقط إذا كتب /start)
+    // 3. أمر الاستارت (يشتغل فقط إذا كتبت /start حصراً)
     if (text === '/start') {
         await botApi.sendMessage(chatId, "هلا مقتدى! البوت هسة جاهز للرد الذكي والناصرية 🚀");
     }
