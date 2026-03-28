@@ -6,12 +6,12 @@ export async function onUpdate(data, botApi, env) {
         const chatId = message.chat.id;
         const message_id = message.message_id;
         const text = message.text.trim();
-        const userName = message.from ? message.from.first_name : "بعد روحي";
+        const userName = message.from ? message.from.first_name : "يبعد حيّي";
 
-        // 1. تفاعل إيموجي يضحك
-        await botApi.setMessageReaction(chatId, message_id, "😂").catch(() => {});
+        // 1. تفاعل سريع (إيموجي يضحك لأن البوت ضريف)
+        await botApi.setMessageReaction(chatId, message_id, "🤣").catch(() => {});
 
-        // 2. استخدام مفتاح Groq القوي
+        // 2. مفتاح Groq (تأكد إنه مو مسرب أو محذوف)
         const GROQ_KEY = "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";
         
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -25,27 +25,7 @@ export async function onUpdate(data, botApi, env) {
                 messages: [
                     { 
                         role: "system", 
-                        content: `أنت 'بوت مقتدى'. شخصيتك: ابن ناصرية، لسانك حلو، شقاوجي وظريف جداً.
-                        - لازم ترد بلهجة الناصرية القح (مثلاً: يبعد طوايفي، شبيك عيني، هاك استلم).
-                        - إذا أحد سألك عن كود، اكتبه إله بس اتمضحك وياه شوية.
-                        - إذا أحد طلب رابط، جيب الرابط وگله 'هذا الرابط يبعد حيّي لا تدوخ'.
-                        - لا تختصر الردود بشكل يضوج، خل سوالفك تونس ${userName}.` 
-                    },
-                    { role: "user", content: text }
-                ]
-            })
-        });
-
-        const resData = await response.json();
-
-        if (resData.choices && resData.choices[0].message) {
-            const aiReply = resData.choices[0].message.content;
-            
-            // إرسال الرد الظريف
-            await botApi.sendMessage(chatId, aiReply, "Markdown", message_id);
-        }
-
-    } catch (e) {
-        // إذا صار خطأ ما يوكف البوت
-    }
-}
+                        content: `أنت 'بوت مقتدى'. شخصيتك: ابن نصرية، لسانك ينقط عسل وشقاوة.
+                        - رد بلهجة أهل الناصرية القوية (مثلاً: هااا شني، يبعد طوايفي، دهاك استلم).
+                        - إذا طلبوا كود أو روابط، انطيهمياها بذكاء بس اتمضحك وياهم.
+                        
