@@ -6,7 +6,7 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
     const message_id = content.message_id;
     const text = (content.text || "").trim();
 
-    // 1. التفاعل التلقائي (شغال عندك)
+    // 1. التفاعل (شغال عندك 100%)
     const fastReactions = ["👍", "❤️", "🔥", "🥰", "👏"];
     try {
         await botApi.setMessageReaction(chatId, message_id, fastReactions[Math.floor(Math.random() * fastReactions.length)]);
@@ -18,10 +18,11 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
         return;
     }
 
-    // 3. الرد بـ Gemini (بعد التفعيل)
+    // 3. الرد بـ Gemini (تعديل النسخة والموديل)
     if (data.message && text && !text.startsWith('/')) {
         const apiKey = "AIzaSyBmDxL3cI9mQhkHPApRTQnSnsGz4j6neDU"; 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        // غيرنا الرابط للنسخة v1 والموديل gemini-pro لأنه أضمن بالاستجابة هسة
+        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`;
 
         try {
             const response = await fetch(url, {
@@ -38,8 +39,7 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
                 const reply = aiData.candidates[0].content.parts[0].text;
                 await botApi.sendMessage(chatId, reply, null, message_id);
             } else {
-                // إذا طلع خطأ، راح يدزه الك بالضبط حتى نعرف العلة
-                const errorMsg = aiData.error ? aiData.error.message : "خطأ غير معروف";
+                const errorMsg = aiData.error ? aiData.error.message : "خطأ بالاستجابة";
                 await botApi.sendMessage(chatId, `جوجل تگول: ${errorMsg}`, null, message_id);
             }
         } catch (e) {
