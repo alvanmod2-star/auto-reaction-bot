@@ -7,32 +7,35 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
         const message_id = message.message_id;
         const text = message.text.trim();
 
-        // 1. التفاعل (حتى نكسر النحس)
+        // 1. التفاعل التلقائي (شغال عندك تمام)
         await botApi.setMessageReaction(chatId, message_id, "👍").catch(() => {});
 
-        // 2. الرد بالذكاء (Gemini)
-        if (!text.startsWith('/')) {
-            // المفتاح مالتك الجديد اللي نسخته
-            const apiKey = "AIzaSyB2VrseqlXOGA7cCiD_QGj2LUU5YaYsfBs"; 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        if (text.startsWith('/')) return;
 
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: `أنت بوت مقتدى، رد بلهجة أهل الناصرية وبكلمات قصيرة جداً ومرحة. رد على: ${text}` }] }]
-                })
-            });
+        // 2. طلب الذكاء الاصطناعي برابط "مضمون"
+        const apiKey = "AIzaSyB2VrseqlXOGA7cCiD_QGj2LUU5YaYsfBs"; // مفتاحك الجديد
+        
+        // غيرنا الرابط إلى gemini-1.5-flash-latest (الأكثر استقراراً هسة)
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
 
-            const resData = await response.json();
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: `رد بكلمة وحدة بلهجة أهل الناصرية مضحكة على: ${text}` }] }]
+            })
+        });
 
-            if (resData.candidates && resData.candidates[0].content) {
-                const aiReply = resData.candidates[0].content.parts[0].text;
-                await botApi.sendMessage(chatId, aiReply, null, message_id);
-            }
+        const resData = await response.json();
+
+        // 3. معالجة الرد أو إظهار الخطأ الحقيقي
+        if (resData.candidates && resData.candidates[0].content) {
+            const reply = resData.candidates[0].content.parts[0].text;
+            await botApi.sendMessage(chatId, reply, null, message_id);
+        } else if (resData.error) {
+            // إذا جوجل رفضت، راح تگول لنا السبب بوضوح
+            await botApi.sendMessage(chatId, "جوجل تگول: " + resData.error.message);
         }
-    } catch (e) {
-        // إذا رجع الخطأ، راح نعرف إنه من الـ API نفسه
-        console.log("Error inside handler");
-    }
+
+    } catch (e) {}
 }
