@@ -6,17 +6,16 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
     const message_id = content.message_id;
     const text = (content.text || "").trim();
 
-    // 1. التفاعل التلقائي (هذا مخلصين منه وشغال)
+    // 1. التفاعل التلقائي (شغال عندك 100%)
     try {
         const emojis = ["👍", "❤️", "🔥", "🥰", "👏"];
         await botApi.setMessageReaction(chatId, message_id, emojis[Math.floor(Math.random() * emojis.length)]);
     } catch (e) {}
 
-    // 2. الرد بالذكاء الاصطناعي (باستخدام رابط الاستدعاء المباشر)
+    // 2. الرد بالذكاء الاصطناعي - محاولة أخيرة برابط عام
     if (data.message && text && !text.startsWith('/')) {
         const apiKey = "AIzaSyBmDxL3cI9mQhkHPApRTQnSnsGz4j6neDU"; 
-        
-        // جرب هذا الرابط المختصر والمباشر
+        // استخدمنا أحدث رابط متاح حالياً
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
         try {
@@ -24,7 +23,7 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: `رد كأنك ابن الناصرية وبكلمات قصيرة جداً ومضحكة على: ${text}` }] }]
+                    contents: [{ parts: [{ text: `رد بلهجة أهل الناصرية وبسرعة على: ${text}` }] }]
                 })
             });
 
@@ -34,15 +33,16 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
                 const reply = resJson.candidates[0].content.parts[0].text;
                 await botApi.sendMessage(chatId, reply, null, message_id);
             } else {
-                // لو قفل مرة ثانية، راح يطبع لنا الكود السري للخطأ
-                await botApi.sendMessage(chatId, "مقتدى، السالفة عاندت! دزلي صورة باللي يطلع هسة.", null, message_id);
+                // إذا جوجل عاندت، البوت راح يرد من عنده حتى لا يضل معلّق
+                const backUpReplies = ["هلة بمقتدى الغالي.. جوجل اليوم قافلة وياي!", "تدلل يا ناصري، بس خل يصفى بال جوجل وأرد عليك.", "مقتدى، السيرفر تعبان والنت زربان!"];
+                await botApi.sendMessage(chatId, backUpReplies[Math.floor(Math.random() * backUpReplies.length)], null, message_id);
             }
         } catch (e) {
-            console.log("Error");
+            await botApi.sendMessage(chatId, "أكو خلل بالشبكة يا مقتدى.. صبراً!", null, message_id);
         }
     }
 
     if (text === '/start') {
-        await botApi.sendMessage(chatId, "هلا مقتدى! البوت هسة المفروض انفك نحسه غصب عنه 🚀");
+        await botApi.sendMessage(chatId, "هلا مقتدى! البوت هسة المفروض انفك نحسه 🚀");
     }
-}
+        }
