@@ -1,6 +1,3 @@
-import { startMessage } from './constants.js';
-import { getRandomPositiveReaction } from './helper.js';
-
 export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUsername, RandomLevel) {
     const content = data.message || data.channel_post;
     if (!content) return;
@@ -9,14 +6,21 @@ export async function onUpdate(data, botApi, Reactions, RestrictedChats, botUser
     const message_id = content.message_id;
     const text = content.text || "";
 
-    // 1. التفاعل التلقائي (شغال بكل مكان)
-    if (!RestrictedChats.includes(chatId)) {
-        try {
-            await botApi.setMessageReaction(chatId, message_id, getRandomPositiveReaction(Reactions));
-        } catch (e) { }
+    // 1. التفاعل التلقائي (مباشر بدون ملفات خارجية)
+    const fastReactions = ["👍", "❤️", "🔥", "🥰", "👏"];
+    const randomEmoji = fastReactions[Math.floor(Math.random() * fastReactions.length)];
+    
+    try {
+        await botApi.setMessageReaction(chatId, message_id, randomEmoji);
+    } catch (e) { console.log("Reaction failed"); }
+
+    // 2. أمر الاستارت (رد مباشر)
+    if (text.startsWith('/start')) {
+        await botApi.sendMessage(chatId, "هلا مقتدى! البوت شغال هسة 100% وبدأ يستلم.");
+        return;
     }
 
-    // 2. الرد الذكي (خاص ومجموعات)
+    // 3. الرد الذكي بالذكاء الاصطناعي
     if (data.message && text && !text.startsWith('/')) {
         const apiKey = "AIzaSyDiTD-uOIX69bewR59dBRo-MTw_mugQ3SM";
         try {
