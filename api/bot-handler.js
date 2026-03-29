@@ -6,33 +6,30 @@ export async function onUpdate(data, botApi) {
         const chatId = message.chat.id;
         const message_id = message.message_id;
         const text = message.text.trim();
-        const userName = message.from ? message.from.first_name : "الغالي";
+        const userName = message.from ? message.from.first_name : "المطوّر";
 
-        // 1. التفاعلات اللي ردتها (💘🌚💋💗)
+        // 1. تفاعلاتك المفضلة (💘🌚💋💗)
         const myReactions = ["💘", "🌚", "💋", "💗"];
         const randomReaction = myReactions[Math.floor(Math.random() * myReactions.length)];
         await botApi.setMessageReaction(chatId, message_id, randomReaction).catch(() => {});
 
-        // 2. إذا جانت الرسالة /start تطلع الواجهة
+        // 2. أمر البداية (واجهة المبرمج)
         if (text === '/start') {
             const welcomeText = `
-✨ **هلا بيك يا بعد روحي نورت بوت مقتدى** ✨
+💻 **هلا بيك يا مطورنا ${userName}** ✨
 
-أنا أخوك "ابن الناصرية" ذكاء اصطناعي بس بلمسة ناصرية حارة.
-سولف وياي، تشاقى، اسأل.. أنا بالخدمة يبعد جبدي.
+أنا بوت مقتدى، خبيرك الخاص في:
+• كتابة الأكواد (C++, Python, JS, C#).
+• جلب أوفسات الألعاب (Offsets) وتعديل الملفات.
+• هندسة عكسية وتعديل تطبيقات الأندرويد.
 
-📌 **شنو أگدر أسوي؟**
-• أرد عليك بلهجتنا الحلوة.
-• أتفاعل وياك بالحب والحنان.
-• أونسك بشقاي ومرحي.
-
-⚠️ **ملاحظة:** خليك مؤدب حتى أحطك على راسي 🌚💋.
+سولف وياي بالبرمجة وبشرني شتريد نعدل اليوم؟ 🌚💋
             `;
             await botApi.sendMessage(chatId, welcomeText, "Markdown", message_id);
-            return; // هنا ننهي الدالة حتى ما يروح للذكاء الاصطناعي مرتين
+            return;
         }
 
-        // 3. إذا جان كلام عادي يروح للذكاء الاصطناعي (Groq)
+        // 3. محرك الذكاء الاصطناعي البرمجي (Groq - Llama 3.3 70B)
         const GROQ_KEY = "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";
         
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -46,10 +43,11 @@ export async function onUpdate(data, botApi) {
                 messages: [
                     { 
                         role: "system", 
-                        content: `أنت 'بوت مقتدى'. ابن ناصرية مرح، مؤدب جداً، وحنون.
-                        - رد بلهجة أهل الناصرية الطيبة (مثلاً: يا بعد روحي، تدلل عيني، هلا بيك ${userName}).
-                        - خلك خفيف دم ومحبوب وحنون وابتعد عن الغلط.
-                        - رد على المستخدم بنفس أسلوبه المرح.` 
+                        content: `أنت 'بوت مقتدى'. هويتك: مبرمج عبقري متخصص في تعديل الألعاب (Game Modding) والأوفسات والبرامج.
+                        - رد بلهجة أهل الناصرية حصراً.
+                        - مهمتك الأساسية: كتابة أكواد، جلب أوفسات، شرح تعديل البرامج (مثل MT Manager أو اللابتوب).
+                        - خلك ضريف وحنون ومؤدب بس "حريكة" بالبرمجة.
+                        - استخدم الـ Markdown لتنسيق الأكواد بشكل احترافي.` 
                     },
                     { role: "user", content: text }
                 ]
@@ -60,10 +58,11 @@ export async function onUpdate(data, botApi) {
 
         if (resData.choices && resData.choices[0].message) {
             const aiReply = resData.choices[0].message.content;
-            await botApi.sendMessage(chatId, aiReply, null, message_id);
+            // تفعيل Markdown لإظهار الأكواد بصندوق أسود سهل النسخ
+            await botApi.sendMessage(chatId, aiReply, "Markdown", message_id);
         }
 
     } catch (e) {
-        console.log("Error logic");
+        console.log("Error in coding logic");
     }
-            }
+}
