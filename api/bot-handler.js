@@ -8,12 +8,12 @@ export async function onUpdate(data, botApi) {
         const text = message.text.trim();
         const userName = message.from ? message.from.first_name : "الغالي";
 
-        // 1. التفاعلات (💘🌚💋💗)
+        // 1. التفاعلات اللي ردتها (💘🌚💋💗)
         const myReactions = ["💘", "🌚", "💋", "💗"];
         const randomReaction = myReactions[Math.floor(Math.random() * myReactions.length)];
         await botApi.setMessageReaction(chatId, message_id, randomReaction).catch(() => {});
 
-        // 2. معالجة أمر /start (الواجهة)
+        // 2. إذا جانت الرسالة /start تطلع الواجهة
         if (text === '/start') {
             const welcomeText = `
 ✨ **هلا بيك يا بعد روحي نورت بوت مقتدى** ✨
@@ -29,10 +29,10 @@ export async function onUpdate(data, botApi) {
 ⚠️ **ملاحظة:** خليك مؤدب حتى أحطك على راسي 🌚💋.
             `;
             await botApi.sendMessage(chatId, welcomeText, "Markdown", message_id);
-            return;
+            return; // هنا ننهي الدالة حتى ما يروح للذكاء الاصطناعي مرتين
         }
 
-        // 3. استخدام Groq للردود الذكية والمرحة
+        // 3. إذا جان كلام عادي يروح للذكاء الاصطناعي (Groq)
         const GROQ_KEY = "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";
         
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -46,10 +46,10 @@ export async function onUpdate(data, botApi) {
                 messages: [
                     { 
                         role: "system", 
-                        content: `أنت 'بوت مقتدى'. ابن ناصرية مرح، مؤدب، وحنون.
-                        - رد بلهجة أهل الناصرية (مثلاً: يبعد حيّي، تدلل، هلا بيك ${userName}).
-                        - خلك خفيف دم وتفاعل وية كلام المستخدم بذكاء.
-                        - إذا راد كود أو مساعدة، ساعده بس بأسلوبك الناصري الخاص.` 
+                        content: `أنت 'بوت مقتدى'. ابن ناصرية مرح، مؤدب جداً، وحنون.
+                        - رد بلهجة أهل الناصرية الطيبة (مثلاً: يا بعد روحي، تدلل عيني، هلا بيك ${userName}).
+                        - خلك خفيف دم ومحبوب وحنون وابتعد عن الغلط.
+                        - رد على المستخدم بنفس أسلوبه المرح.` 
                     },
                     { role: "user", content: text }
                 ]
@@ -60,10 +60,10 @@ export async function onUpdate(data, botApi) {
 
         if (resData.choices && resData.choices[0].message) {
             const aiReply = resData.choices[0].message.content;
-            await botApi.sendMessage(chatId, aiReply, "Markdown", message_id);
+            await botApi.sendMessage(chatId, aiReply, null, message_id);
         }
 
     } catch (e) {
         console.log("Error logic");
     }
-}
+            }
