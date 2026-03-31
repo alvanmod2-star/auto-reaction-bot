@@ -1,7 +1,4 @@
-// مصفوفة الذاكرة لازم تكون برا حتى تحاول تحافظ على السياق
-let chatHistory = []; 
-
-export async function onUpdate(data, botApi) {
+Export async function onUpdate(data, botApi) {
     try {
         const message = data.message || data.channel_post;
         if (!message || !message.text) return;
@@ -9,32 +6,39 @@ export async function onUpdate(data, botApi) {
         const chatId = message.chat.id;
         const message_id = message.message_id;
         const text = message.text.trim();
-        const userName = message.from ? message.from.first_name : "المطوّر";
+        const userName = message.from ? message.from.first_name : "الغالي";
 
-        // 1. التفاعلات (💘🌚💋💗)
+        // 1. التفاعلات اللي ردتها (💘🌚💋💗)
         const myReactions = ["💘", "🌚", "💋", "💗"];
         const randomReaction = myReactions[Math.floor(Math.random() * myReactions.length)];
         await botApi.setMessageReaction(chatId, message_id, randomReaction).catch(() => {});
 
-        // 2. أمر البداية والواجهة
+        // 2. إذا جانت الرسالة /start تطلع الواجهة
         if (text === '/start') {
-            chatHistory = []; // تصفير الذاكرة للبدء من جديد
-            const welcomeText = `هلا بيك يا بعد روحي مقتدى 🌚💋\nأنا مساعدك الشخصي، اسألني عن أي كود بايثون أو أوفست وأنا أتذكرك دائماً.`;
+            const welcomeText = `
+✨ **هلا بيك يا بعد روحي نورت بوت مقتدى** ✨
+
+أنا مساعدك الشخصي "تيلكرام " ذكاء اصطناعي بس بلمسة عراقية  .
+سولف وياي، تشاقى، اسأل.. أنا بالخدمة  .
+
+📌 **شنو أگدر أسوي؟**
+• أرد عليك بلهجتنا الحلوة.
+• أتفاعل وياك بالحب والحنان.
+• أونسك بشقاي ومرحي.
+
+⚠️ **ملاحظة:** خليك مؤدب حتى أحطك على راسي 🌚💋.
+            `;
             await botApi.sendMessage(chatId, welcomeText, "Markdown", message_id);
-            return;
+            return; // هنا ننهي الدالة حتى ما يروح للذكاء الاصطناعي مرتين
         }
 
-        // 3. إدارة سياق المحادثة (الذاكرة)
-        chatHistory.push({ role: "user", content: text });
-        if (chatHistory.length > 8) chatHistory.shift(); // نحفظ آخر 8 رسايل حتى ما يثقل
-
-        // 4. طلب الرد من Groq
+        // 3. إذا جان كلام عادي يروح للذكاء الاصطناعي (Groq)
         const GROQ_KEY = "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";
         
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: 'POST',
             headers: {
-                'Authorization': 'Bearer ' + GROQ_KEY,
+                'Authorization': `Bearer ${GROQ_KEY}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -42,27 +46,24 @@ export async function onUpdate(data, botApi) {
                 messages: [
                     { 
                         role: "system", 
-                        content: `أنت 'تيلكرام مساعدك الشخصي'. عراقي من أهل الناصرية، مرح، حنون، وخبير برمجة (Python).
-                        - رد بلهجة عراقية حنينة ومؤدبة.
-                        - تذكر اسم المستخدم: ${userName}.
-                        - جاوب على الأكواد والأوفسات بذكاء.` 
+                        content: `أنت ' تيلكرام مساعدك الشخصي'. عراقي  مرح، خلقه واخلاق جداً، ولطيف.
+                        - رد بلهجة عراقية  (مثلاً: يا بعد روحي، تدلل عيني، هلا بيك ${userName}).
+                        - ومساعد اكواد باثيون وجميع انواع البرمجه خفيف دم ومحبوب وحنون وابتعد عن الغلط.
+                        -  رد على المستخدم بنفس أسلوبه مع ايموجيات متناسقه وي الرساله .` 
                     },
-                    ...chatHistory
+                    { role: "user", content: text }
                 ]
             })
         });
 
         const resData = await response.json();
 
-        // 5. إرسال الرد (التأكد من وصول النص)
         if (resData.choices && resData.choices[0].message) {
             const aiReply = resData.choices[0].message.content;
-            chatHistory.push({ role: "assistant", content: aiReply });
-            await botApi.sendMessage(chatId, aiReply, "Markdown", message_id);
+            await botApi.sendMessage(chatId, aiReply, null, message_id);
         }
 
     } catch (e) {
-        // في حال حدوث خطأ بالسيرفر يرسل تنبيه بسيط
         console.log("Error logic");
     }
-    }
+}
