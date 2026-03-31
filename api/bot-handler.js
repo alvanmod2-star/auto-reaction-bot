@@ -1,5 +1,5 @@
-// مصفوفة بسيطة لحفظ الذاكرة (ملاحظة: بالـ Workers الذاكرة تمسح بعد فترة، للثبات الدائم نحتاج KV)
-let chatHistory = {}; 
+// مصفوفة الذاكرة لازم تكون برا حتى تحاول تحافظ على السياق
+let chatHistory = []; 
 
 export async function onUpdate(data, botApi) {
     try {
@@ -9,7 +9,7 @@ export async function onUpdate(data, botApi) {
         const chatId = message.chat.id;
         const message_id = message.message_id;
         const text = message.text.trim();
-        const userName = message.from ? message.from.first_name : "الغالي";
+        const userName = message.from ? message.from.first_name : "المطوّر";
 
         // 1. التفاعلات (💘🌚💋💗)
         const myReactions = ["💘", "🌚", "💋", "💗"];
@@ -18,40 +18,23 @@ export async function onUpdate(data, botApi) {
 
         // 2. أمر البداية والواجهة
         if (text === '/start') {
-            chatHistory[chatId] = []; // تصفير الذاكرة عند البدء من جديد
-            const welcomeText = `
-✨ **هلا بيك يا بعد روحي نورت "تيلكرام مساعدك الشخصي"** ✨
-
-أنا أخوك بلمسة عراقية، مبرمج وذكي وأتذكر كلامك.
-سولف وياي، اطلب أكواد، أو بس دردش.. أنا كلي إلك.
-
-📌 **شنو أگدر أسوي؟**
-• أتذكر السوالف القديمة (مثل جيمناي).
-• أساعدك بكل لغات البرمجة (Python وغيرها).
-• أرد بلهجة عراقية حنينة ومرحة.
-
-بشرني شعدنا اليوم؟ 🌚💋
-            `;
+            chatHistory = []; // تصفير الذاكرة للبدء من جديد
+            const welcomeText = `هلا بيك يا بعد روحي مقتدى 🌚💋\nأنا مساعدك الشخصي، اسألني عن أي كود بايثون أو أوفست وأنا أتذكرك دائماً.`;
             await botApi.sendMessage(chatId, welcomeText, "Markdown", message_id);
             return;
         }
 
-        // 3. إدارة الذاكرة (History)
-        if (!chatHistory[chatId]) chatHistory[chatId] = [];
-        
-        // إضافة رسالة المستخدم للذاكرة
-        chatHistory[chatId].push({ role: "user", content: text });
+        // 3. إدارة سياق المحادثة (الذاكرة)
+        chatHistory.push({ role: "user", content: text });
+        if (chatHistory.length > 8) chatHistory.shift(); // نحفظ آخر 8 رسايل حتى ما يثقل
 
-        // نخلي الذاكرة قصيرة حتى ما يثقل الطلب (آخر 10 رسائل مثلاً)
-        if (chatHistory[chatId].length > 10) chatHistory[chatId].shift();
-
-        // 4. إرسال المحادثة كاملة لـ Groq
+        // 4. طلب الرد من Groq
         const GROQ_KEY = "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";
         
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${GROQ_KEY}`,
+                'Authorization': 'Bearer ' + GROQ_KEY,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -59,29 +42,27 @@ export async function onUpdate(data, botApi) {
                 messages: [
                     { 
                         role: "system", 
-                        content: `أنت 'تيلكرام مساعدك الشخصي'. عراقي مرح، حكيم وأخلاق جداً.
-                        - رد بلهجة عراقية حنينة (يا بعد روحي، تدلل، عيوني ${userName}).
-                        - أنت خبير أكواد بايثون وجميع أنواع البرمجة.
-                        - رد بإيموجيات متناسقة وكن حنوناً ومرحاً.
-                        - تذكر دائماً سياق المحادثة السابق للرد بذكاء.` 
+                        content: `أنت 'تيلكرام مساعدك الشخصي'. عراقي من أهل الناصرية، مرح، حنون، وخبير برمجة (Python).
+                        - رد بلهجة عراقية حنينة ومؤدبة.
+                        - تذكر اسم المستخدم: ${userName}.
+                        - جاوب على الأكواد والأوفسات بذكاء.` 
                     },
-                    ...chatHistory[chatId] // هنا نمرر كل المحادثة السابقة
+                    ...chatHistory
                 ]
             })
         });
 
         const resData = await response.json();
 
+        // 5. إرسال الرد (التأكد من وصول النص)
         if (resData.choices && resData.choices[0].message) {
             const aiReply = resData.choices[0].message.content;
-            
-            // إضافة رد البوت للذاكرة حتى يتذكره بالمرة الجاية
-            chatHistory[chatId].push({ role: "assistant", content: aiReply });
-
+            chatHistory.push({ role: "assistant", content: aiReply });
             await botApi.sendMessage(chatId, aiReply, "Markdown", message_id);
         }
 
     } catch (e) {
-        console.log("Error in chat logic");
+        // في حال حدوث خطأ بالسيرفر يرسل تنبيه بسيط
+        console.log("Error logic");
     }
-}
+    }
