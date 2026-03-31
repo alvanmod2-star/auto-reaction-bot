@@ -1,4 +1,4 @@
-Export async function onUpdate(data, botApi) {
+export async function onUpdate(data, botApi) {
     try {
         const message = data.message || data.channel_post;
         if (!message || !message.text) return;
@@ -18,8 +18,8 @@ Export async function onUpdate(data, botApi) {
             const welcomeText = `
 ✨ **هلا بيك يا بعد روحي نورت بوت مقتدى** ✨
 
-أنا مساعدك الشخصي "تيلكرام " ذكاء اصطناعي بس بلمسة عراقية  .
-سولف وياي، تشاقى، اسأل.. أنا بالخدمة  .
+أنا مساعدك الشخصي "تيلكرام" ذكاء اصطناعي بس بلمسة عراقية.
+سولف وياي، تشاقى، اسأل.. أنا بالخدمة.
 
 📌 **شنو أگدر أسوي؟**
 • أرد عليك بلهجتنا الحلوة.
@@ -46,10 +46,10 @@ Export async function onUpdate(data, botApi) {
                 messages: [
                     { 
                         role: "system", 
-                        content: `أنت ' تيلكرام مساعدك الشخصي'. عراقي  مرح، خلقه واخلاق جداً، ولطيف.
-                        - رد بلهجة عراقية  (مثلاً: يا بعد روحي، تدلل عيني، هلا بيك ${userName}).
-                        - ومساعد اكواد باثيون وجميع انواع البرمجه خفيف دم ومحبوب وحنون وابتعد عن الغلط.
-                        -  رد على المستخدم بنفس أسلوبه مع ايموجيات متناسقه وي الرساله .` 
+                        content: `أنت 'تيلكرام مساعدك الشخصي'. عراقي مرح، خلقه وأخلاق جداً، ولطيف.
+                        - رد بلهجة عراقية (مثلاً: يا بعد روحي، تدلل عيني، هلا بيك ${userName}).
+                        - ومساعد أكواد بايثون وجميع أنواع البرمجة، خفيف دم ومحبوب وحنون وابتعد عن الغلط.
+                        - رد على المستخدم بنفس أسلوبه مع إيموجيات متناسقة وية الرسالة.` 
                     },
                     { role: "user", content: text }
                 ]
@@ -66,4 +66,4 @@ Export async function onUpdate(data, botApi) {
     } catch (e) {
         console.log("Error logic");
     }
-}
+            }
