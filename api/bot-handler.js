@@ -6,46 +6,33 @@ export async function onUpdate(data, botApi) {
         const chatId = message.chat.id;
         const message_id = message.message_id;
         const text = message.text.trim();
-        const userName = message.from ? message.from.first_name : "يبعد حيّي";
+        const userName = message.from ? message.from.first_name : "الغالي";
 
-        // 1. التفاعلات الحنونة (💘🌚💋💗)
+        // 1. التفاعلات اللي ردتها (💘🌚💋💗)
         const myReactions = ["💘", "🌚", "💋", "💗"];
         const randomReaction = myReactions[Math.floor(Math.random() * myReactions.length)];
         await botApi.setMessageReaction(chatId, message_id, randomReaction).catch(() => {});
 
-        // 2. معالجة أمر /start مع الأزرار
-        if (text.startsWith('/start')) {
+        // 2. إذا جانت الرسالة /start تطلع الواجهة
+        if (text === '/start') {
             const welcomeText = `
 ✨ **هلا بيك يا بعد روحي نورت بوت مقتدى** ✨
 
-أنا أخوك "ابن الناصرية" حنون وضريف وأساعدك بالبرمجة والأكواد.
-سولف وياي، اطلب أوفست، أو بس تشاقى.. أنا كلي إلك.
+أنا مساعدك الشخصي "تيلكرام " ذكاء اصطناعي بس بلمسة عراقية  .
+سولف وياي، تشاقى، اسأل.. أنا بالخدمة  .
 
 📌 **شنو أگدر أسوي؟**
-• أرد عليك بلهجتنا الحنونة.
-• أجيبلك أكواد وأوفسات بلمشة ناصرية.
-• أونسك بوجودي وياك.
+• أرد عليك بلهجتنا الحلوة.
+• أتفاعل وياك بالحب والحنان.
+• أونسك بشقاي ومرحي.
 
-⚠️ **ملاحظة:** خليك حباب مثلي حتى أحبك 🌚💋.
+⚠️ **ملاحظة:** خليك مؤدب حتى أحطك على راسي 🌚💋.
             `;
-
-            const inlineKeyboard = {
-                inline_keyboard: [
-                    [
-                        { text: "➕ إضافة للمجموعة", url: `https://t.me/${data.bot_username || 'your_bot_user'}?startgroup=true` },
-                        { text: "📢 قناة المطور", url: "https://t.me/your_channel" } // حط رابط قناتك هنا
-                    ],
-                    [
-                        { text: "👨‍💻 مبرمج البوت", url: "https://t.me/your_account" } // حط رابط حسابك هنا
-                    ]
-                ]
-            };
-
-            await botApi.sendMessage(chatId, welcomeText, "Markdown", message_id, inlineKeyboard);
-            return;
+            await botApi.sendMessage(chatId, welcomeText, "Markdown", message_id);
+            return; // هنا ننهي الدالة حتى ما يروح للذكاء الاصطناعي مرتين
         }
 
-        // 3. الردود الحنونة والبرمجية (Groq)
+        // 3. إذا جان كلام عادي يروح للذكاء الاصطناعي (Groq)
         const GROQ_KEY = "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";
         
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -59,10 +46,10 @@ export async function onUpdate(data, botApi) {
                 messages: [
                     { 
                         role: "system", 
-                        content: `أنت 'بوت مقتدى'. مبرمج ناصري حنون جداً، مؤدب، وضريف.
-                        - رد بلهجة أهل الناصرية الطيبة (يا بعد روحي، تدلل عيني، هلا بيك ${userName}).
-                        - إذا طلبوا أكواد أو أوفسات، ساعدهم بذكاء بس بأسلوب لطيف.
-                        - خلك كيوت ومحبوب وابتعد عن الغلط تماماً.` 
+                        content: `أنت ' تيلكرام مساعدك الشخصي'. عراقي  مرح، خلقه واخلاق جداً، ولطيف.
+                        - رد بلهجة عراقية  (مثلاً: يا بعد روحي، تدلل عيني، هلا بيك ${userName}).
+                        - ومساعد اكواد باثيون وجميع انواع البرمجه خفيف دم ومحبوب وحنون وابتعد عن الغلط.
+                        - رد على المستخدم بنفس أسلوبه .` 
                     },
                     { role: "user", content: text }
                 ]
@@ -73,7 +60,7 @@ export async function onUpdate(data, botApi) {
 
         if (resData.choices && resData.choices[0].message) {
             const aiReply = resData.choices[0].message.content;
-            await botApi.sendMessage(chatId, aiReply, "Markdown", message_id);
+            await botApi.sendMessage(chatId, aiReply, null, message_id);
         }
 
     } catch (e) {
