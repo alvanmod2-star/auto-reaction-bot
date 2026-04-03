@@ -5,37 +5,43 @@ export async function onUpdate(data, botApi) {
 
         const chatId = message.chat.id;
         const message_id = message.message_id;
-        const text = message.text.trim();
+        const text = message.text.trim().toLowerCase();
         const userName = message.from ? message.from.first_name : "الغالي";
 
-        // 1. التفاعلات اللي ردتها (💘🌚💋💗)
+        // 1. التفاعلات التلقائية (💘🌚💋💗)
         const myReactions = ["💘", "🌚", "💋", "💗"];
         const randomReaction = myReactions[Math.floor(Math.random() * myReactions.length)];
         await botApi.setMessageReaction(chatId, message_id, randomReaction).catch(() => {});
 
-        // 2. إذا جانت الرسالة /start تطلع الواجهة
-        if (text === '/start') {
-            const welcomeText = `
-✨ **هلا بيك يا بعد روحي نورت بوت مقتدى** ✨
+        // 2. أوامر الصيد (سداسي/سباعي)
+        if (text === 'صيد' || text === '/hunt') {
+            const chars = "abcdefghijklmnopqrstuvwxyz0123456789_";
+            let foundUsers = [];
+            
+            // توليد 5 يوزرات سداسية/سباعية عشوائية كنموذج فحص سريع
+            for (let i = 0; i < 5; i++) {
+                let len = Math.floor(Math.random() * 2) + 6; // 6 أو 7
+                let user = "";
+                for (let j = 0; j < len; j++) user += chars.charAt(Math.floor(Math.random() * chars.length));
+                foundUsers.push(`\`${user}\``);
+            }
 
-أنا مساعدك الشخصي "تيلكرام" ذكاء اصطناعي بس بلمسة عراقية.
-سولف وياي، تشاقى، اسأل.. أنا بالخدمة.
-
-📌 **شنو أگدر أسوي؟**
-• أرد عليك بلهجتنا الحلوة.
-• أتفاعل وياك بالحب والحنان.
-• أونسك بشقاي ومرحي.
-
-⚠️ **ملاحظة:** خليك مؤدب حتى أحطك على راسي 🌚💋.
-            `;
-            await botApi.sendMessage(chatId, welcomeText, "Markdown", message_id);
-            return; // هنا ننهي الدالة حتى ما يروح للذكاء الاصطناعي مرتين
+            const huntText = `🚀 **جارِ الصيد يا وحش الناصرية...**\n\n🎯 يوزرات مقترحة للفحص (سداسي/سباعي):\n${foundUsers.join('\n')}\n\n💡 استخدم سكربت البايثون اللي عندك لفحص المتاح منها هسة!`;
+            await botApi.sendMessage(chatId, huntText, "Markdown", message_id);
+            return;
         }
 
-        // 3. إذا جان كلام عادي يروح للذكاء الاصطناعي (Groq)
+        // 3. واجهة البداية /start
+        if (text === '/start') {
+            const welcomeText = `✨ **هلا بيك يا بعد روحي مقتدى نورت** ✨\n\nأنا بوتك المطور بذكاء GROK واللمسة العراقية.\n\n📌 **شنو اگدر أسوي؟**\n• أرد عليك بلهجتنا (سولف وياي).\n• أتفاعل وية رسائلك تلقائياً 🌚.\n• أساعدك بصيد اليوزرات (اكتب 'صيد').\n• أصمم لك أكواد وهاكات 🚀.\n\nتفضل اسأل أي شي يا غالي 💋.`;
+            await botApi.sendMessage(chatId, welcomeText, "Markdown", message_id);
+            return;
+        }
+
+        // 4. الذكاء الاصطناعي (GROK / Llama-3.3)
         const GROQ_KEY = "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";
         
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        const aiResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${GROQ_KEY}`,
@@ -46,24 +52,25 @@ export async function onUpdate(data, botApi) {
                 messages: [
                     { 
                         role: "system", 
-                        content: `أنت 'تيلكرام مساعدك الشخصي'. عراقي مرح، خلقه وأخلاق جداً، ولطيف.
-                        - رد بلهجة عراقية (مثلاً: يا بعد روحي، تدلل عيني، هلا بيك ${userName}).
-                        - ومساعد أكواد بايثون وجميع أنواع البرمجة، خفيف دم ومحبوب وحنون وابتعد عن الغلط وايضا مخالف للثوانين وتساعد في صناعه هاكات للالعاب .
-                        - رد على المستخدم بنفس أسلوبه مع إيموجيات متناسقة وية الرسالة.` 
+                        content: `أنت 'مساعد مقتدى الشخصي'. عراقي من الناصرية، مرح جداً، خفيف دم، وحنون.
+                        - رد بلهجة عراقية قحة (يا بعد روحي، تدلل عيني، نورت يا وحش).
+                        - أنت خبير برمجة بايثون وصناعة هاكات ألعاب (مثل سابوي وتيك توك).
+                        - إذا سألك مقتدى عن الصيد، شجعه وأعطيه نصائح احترافية.
+                        - استخدم إيموجيات (🌚, 💋, 🚀, 🔥) بكثرة.` 
                     },
                     { role: "user", content: text }
                 ]
             })
         });
 
-        const resData = await response.json();
+        const resData = await aiResponse.json();
 
         if (resData.choices && resData.choices[0].message) {
-            const aiReply = resData.choices[0].message.content;
-            await botApi.sendMessage(chatId, aiReply, null, message_id);
+            const reply = resData.choices[0].message.content;
+            await botApi.sendMessage(chatId, reply, null, message_id);
         }
 
     } catch (e) {
-        console.log("Error logic");
+        console.log("Error in Maktada Bot Logic");
     }
-            }
+}
